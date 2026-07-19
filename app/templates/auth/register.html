@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create your account — {{ app_name }}</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('yield-theme') || 'light');</script>
+</head>
+<body>
+  <div class="auth-shell">
+    <div class="auth-visual">
+      <div class="auth-visual-brand">
+        <div class="sidebar-brand-mark">Y</div>
+        <span class="auth-visual-brand-name">{{ app_name }}</span>
+      </div>
+
+      <div class="auth-visual-copy">
+        <div class="eyebrow">Get started free</div>
+        <h2>Set up your workspace in under a minute.</h2>
+        <p>Upload your campaign spreadsheet and Yield will map it, benchmark it, and tell you exactly how to reallocate spend for maximum return.</p>
+      </div>
+
+      <div class="auth-mock-card">
+        <div class="auth-mock-card-title">What you'll get</div>
+        <div class="auth-mock-row"><span>Normalized campaign database</span><span class="value up">✓</span></div>
+        <div class="auth-mock-row"><span>4 optimization strategies</span><span class="value up">✓</span></div>
+        <div class="auth-mock-row"><span>PDF · Excel · CSV reporting</span><span class="value up">✓</span></div>
+        <div class="auth-mock-row"><span>Role-based team access</span><span class="value up">✓</span></div>
+      </div>
+    </div>
+
+    <div class="auth-form-side">
+      <div class="auth-form-card">
+        <div class="auth-mobile-brand">
+          <div class="sidebar-brand-mark" style="background:linear-gradient(135deg,#2DD4BF,#0F766E);">Y</div>
+          <strong style="font-family:var(--font-display);font-size:1.1rem;">{{ app_name }}</strong>
+        </div>
+
+        <div class="auth-form-header">
+          <h1>Create your account</h1>
+          <p>Start optimizing your marketing budget today — no credit card required.</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+          {{ form.hidden_tag() }}
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="name">Full name</label>
+              {{ form.name(class_="form-control" + (" is-invalid" if form.name.errors else ""), id="name", placeholder="Alex Rivera", autofocus=true) }}
+              {% for e in form.name.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="company_name">Company <span class="text-muted">(optional)</span></label>
+              {{ form.company_name(class_="form-control", id="company_name", placeholder="Acme Inc.") }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg_email">Work email</label>
+            {{ form.email(class_="form-control" + (" is-invalid" if form.email.errors else ""), id="reg_email", placeholder="you@company.com") }}
+            {% for e in form.email.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="reg_password">Password</label>
+              {{ form.password(class_="form-control" + (" is-invalid" if form.password.errors else ""), id="reg_password", placeholder="At least 8 characters") }}
+              {% for e in form.password.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="confirm_password">Confirm password</label>
+              {{ form.confirm_password(class_="form-control" + (" is-invalid" if form.confirm_password.errors else ""), id="confirm_password", placeholder="Repeat password") }}
+              {% for e in form.confirm_password.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="role">Your role</label>
+            {{ form.role(class_="form-control", id="role") }}
+            <span class="form-hint">Admins and agents can upload data and run optimizations; viewers have read-only access.</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg mt-2">Create account</button>
+        </form>
+
+        <p class="auth-form-footer">
+          Already have an account? <a href="{{ url_for('auth.login') }}" style="color:var(--color-primary);font-weight:600;">Sign in</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container"></div>
+  {% include "partials/toasts.html" %}
+  <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

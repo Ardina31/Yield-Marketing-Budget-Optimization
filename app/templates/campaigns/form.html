@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% set page_title = "Edit Campaign" if mode == "edit" else "New Campaign" %}
+{% set page_subtitle = "Define the campaign's channel, objective, and planned budget." %}
+{% from "partials/icons.html" import icon %}
+
+{% block content %}
+<div class="card card-pad" style="max-width:640px;">
+  <form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="form-group">
+      <label class="form-label" for="name">Campaign name</label>
+      {{ form.name(class_="form-control" + (" is-invalid" if form.name.errors else ""), id="name", placeholder="e.g. Summer Sale 2026") }}
+      {% for e in form.name.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="channel_id">Channel</label>
+        {{ form.channel_id(class_="form-control", id="channel_id") }}
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="objective">Objective</label>
+        {{ form.objective(class_="form-control", id="objective") }}
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="status">Status</label>
+        {{ form.status(class_="form-control", id="status") }}
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="budget_allocated">Planned budget ($)</label>
+        {{ form.budget_allocated(class_="form-control" + (" is-invalid" if form.budget_allocated.errors else ""), id="budget_allocated", placeholder="5000.00") }}
+        {% for e in form.budget_allocated.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+      </div>
+    </div>
+
+    <div class="flex gap-3 mt-4">
+      <button type="submit" class="btn btn-primary">{{ icon('check-circle') }} {{ 'Save changes' if mode == 'edit' else 'Create campaign' }}</button>
+      <a href="{{ url_for('campaigns.detail', campaign_id=campaign.id) if mode == 'edit' else url_for('campaigns.list_view') }}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<div class="card card-pad mt-6" style="max-width:640px;background:var(--color-surface-alt);border-style:dashed;">
+  <p class="text-sm text-secondary">
+    {{ icon('info', class_='icon-inline') }} Actual performance (spend, revenue, conversions) is added by importing a CSV or Excel
+    file from the <a href="{{ url_for('campaigns.upload') }}" style="color:var(--color-primary);font-weight:600;">Import data</a> page.
+  </p>
+</div>
+{% endblock %}

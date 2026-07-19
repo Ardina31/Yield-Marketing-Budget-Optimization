@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in — {{ app_name }}</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('yield-theme') || 'light');</script>
+</head>
+<body>
+  <div class="auth-shell">
+    <div class="auth-visual">
+      <div class="auth-visual-brand">
+        <div class="sidebar-brand-mark">Y</div>
+        <span class="auth-visual-brand-name">{{ app_name }}</span>
+      </div>
+
+      <div class="auth-visual-copy">
+        <div class="eyebrow">Marketing budget optimization</div>
+        <h2>Know exactly where your next marketing dollar should go.</h2>
+        <p>Yield analyzes every campaign's performance and rebalances your budget toward the channels actually driving revenue — automatically, in seconds.</p>
+      </div>
+
+      <div class="auth-mock-card">
+        <div class="auth-mock-card-title">Live optimization preview</div>
+        <div class="auth-mock-row"><span>Google Ads</span><span class="value up">+18.2%</span></div>
+        <div class="auth-mock-row"><span>Email</span><span class="value up">+34.5%</span></div>
+        <div class="auth-mock-row"><span>Instagram</span><span class="value" style="color:#FF9B8A;">-22.0%</span></div>
+        <div class="auth-mock-row"><span>Projected ROI lift</span><span class="value up">+27%</span></div>
+      </div>
+    </div>
+
+    <div class="auth-form-side">
+      <div class="auth-form-card">
+        <div class="auth-mobile-brand">
+          <div class="sidebar-brand-mark" style="background:linear-gradient(135deg,#2DD4BF,#0F766E);">Y</div>
+          <strong style="font-family:var(--font-display);font-size:1.1rem;">{{ app_name }}</strong>
+        </div>
+
+        <div class="auth-form-header">
+          <h1>Welcome back</h1>
+          <p>Sign in to your workspace to view campaign performance and run optimizations.</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+          {{ form.hidden_tag() }}
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            <div class="input-affix">
+              {% from "partials/icons.html" import icon %}
+              <span class="input-affix-icon">{{ icon('mail') }}</span>
+              {{ form.email(class_="form-control" + (" is-invalid" if form.email.errors else ""), id="email", placeholder="you@company.com", autofocus=true) }}
+            </div>
+            {% for e in form.email.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <div class="input-affix">
+              <span class="input-affix-icon">{{ icon('lock') }}</span>
+              {{ form.password(class_="form-control" + (" is-invalid" if form.password.errors else ""), id="password", placeholder="••••••••") }}
+            </div>
+            {% for e in form.password.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+          </div>
+
+          <div class="flex items-center justify-between mb-6">
+            <label class="checkbox-row">
+              {{ form.remember(id="remember") }}
+              <span class="text-sm text-secondary">Keep me signed in</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg">Sign in</button>
+        </form>
+
+        <p class="auth-form-footer">
+          New to {{ app_name }}? <a href="{{ url_for('auth.register') }}" style="color:var(--color-primary);font-weight:600;">Create an account</a>
+        </p>
+
+        <div class="card card-pad-sm mt-6" style="background:var(--color-surface-alt);border:1px dashed var(--color-border-strong);">
+          <p class="text-xs text-muted">Demo credentials · <span class="mono">admin@yield.app</span> / <span class="mono">admin123</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container"></div>
+  {% include "partials/toasts.html" %}
+  <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

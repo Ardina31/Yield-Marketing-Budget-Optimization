@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% set page_title = "Dashboard" %}
+{% set page_subtitle = "Welcome back, " + current_user.name.split(' ')[0] + " — here's how your campaigns are performing." %}
+{% from "partials/icons.html" import icon %}
+
+{% block content %}
+
+{% if not has_data %}
+<div class="card">
+  <div class="empty-state">
+    <div class="empty-state-icon">{{ icon('upload') }}</div>
+    <h3>Let's get your first campaign data in</h3>
+    <p>Upload a CSV or Excel file with your campaign spend and revenue, and Yield will build your dashboard and optimization recommendations automatically.</p>
+    {% if current_user.can_manage_data %}
+    <a href="{{ url_for('campaigns.upload') }}" class="btn btn-primary mt-2">{{ icon('upload') }} Upload campaign data</a>
+    {% else %}
+    <p class="text-xs text-muted">Ask an admin or agent on your team to upload campaign data.</p>
+    {% endif %}
+  </div>
+</div>
+{% else %}
+
+<div class="page-section flex items-center justify-between" style="flex-wrap:wrap;gap:var(--space-3);">
+  <div class="period-pills">
+    <a class="period-pill {{ 'active' if selected_period == 'All' }}" href="{{ url_for('dashboard.index', period='All') }}">All time</a>
+    {% for p in periods %}
+    <a class="period-pill {{ 'active' if selected_period == p }}" href="{{ url_for('dashboard.index', period=p) }}">{{ p }}</a>
+    {% endfor %}
+  </div>
+  {% if current_user.can_manage_data %}
+  <div class="flex gap-2">
+    <a href="{{ url_for('campaigns.upload') }}" class="btn btn-secondary btn-sm">{{ icon('upload') }} Import data</a>
+    <a href="{{ url_for('optimization.index') }}" class="btn btn-primary btn-sm">{{ icon('sliders') }} Run optimization</a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="page-section grid grid-stats">
+  <div class="card stat-card">
+    <div class="stat-card-top">
+      <span class="stat-card-icon">{{ icon('megaphone') }}</span>
+    </div>
+    <span class="stat-card-label">Total Campaigns</span>
+    <span class="stat-card-value">{{ kpis.total_campaigns }}</span>
+  </div>
+
+  <div class="card stat-card">
+    <div class="stat-card-top">
+      <span class="stat-card-icon">{{ icon('dollar-sign') }}</span>
+    </div>
+    <span class="stat-card-label">Total Budget Spent</span>
+    <span class="stat-card-value">{{ kpis.total_budget|currency }}</span>
+  </div>
+
+  <div class="card stat-card">
+    <div class="stat-card-top">
+      <span class="stat-card-icon">{{ icon('trending-up') }}</span>
+    </div>
+    <span class="stat-card-label">Blended ROI</span>
+    <span class="stat-card-value">{{ kpis.roi|percent }}</span>
+    <span class="stat-card-delta {{ 'up' if kpis.roi >= 0 else 'down' }}">{{ icon('arrow-up-right' if kpis.roi >= 0 else 'arrow-down-right') }} {{ kpis.total_profit|currency }} profit</span>
+  </div>
+
+  <div class="card stat-card">
+    <div class="stat-card-top">
+      <span class="stat-card-icon">{{ icon('target') }}</span>
+    </div>
+    <span class="stat-card-label">Conversion Rate</span>
+    <span class="stat-card-value">{{ kpis.conversion_rate|percent }}</span>
+    <span class="text-xs text-muted">{{ "{:,}".format(kpis.total_conversions) }} conversions</span>
+  </div>
+
+  <div class="card stat-card">
+    <div class="stat-card-top">
+      <span class="stat-card-icon">{{ icon('eye') }}</span>
+    </div>
+    <span class="stat-card-label">Click-Through Rate</span>
+    <span class="stat-card-value">{{ kpis.ctr|percent }}</span>
+    <span class="text-xs text-muted">{{ "{:,}".format(kpis.total_clicks) }} clicks</span>
+  </div>
+
+  <div class="card stat-card">
+    <div class="stat-card-top">
+      <span class="stat-card-icon">{{ icon('zap') }}</span>
+    </div>
+    <span class="stat-card-label">Cost Per Click</span>
+    <span class="stat-card-value">{{ kpis.cpc|currency }}</span>
+  </div>
+
+  <div class="card stat-card">
+    <div class="stat-card-top">
+      <span class="stat-card-icon">{{ icon('shield') }}</span>
+    </div>
+    <span class="stat-card-label">Cost Per Acquisition</span>
+    <span class="stat-card-value">{{ kpis.cpa|currency }}</span>
+  </div>
+
+  <div class="card stat-card">
+    <div class="stat-card-top">
+      <span class="stat-card-icon">{{ icon('zap') }}</span>
+    </div>
+    <span class="stat-card-label">Best Performing Channel</span>
+    <span class="stat-card-value" style="font-size:1.15rem;">{{ kpis.best_channel or '—' }}</span>
+  </div>
+</div>
+
+<div class="page-section grid grid-2-1">
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3>Performance Trend</h3>
+        <p class="card-subtitle">Spend vs. revenue across reporting periods</p>
+      </div>
+    </div>
+    <div class="card-pad">
+      <div class="chart-container">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3>Budget Allocation</h3>
+        <p class="card-subtitle">Spend share by channel</p>
+      </div>
+    </div>
+    <div class="card-pad">
+      <div class="chart-container">
+        <canvas id="allocationDonut"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if quick_optimization and quick_optimization.status == 'success' %}
+<div class="page-section card card-pad">
+  <div class="card-header" style="padding:0 0 var(--space-4) 0;">
+    <div>
+      <h3>Quick Optimization Preview</h3>
+      <p class="card-subtitle">Maximize-ROI recommendation based on current spend — run the full optimizer for more strategies</p>
+    </div>
+    <a href="{{ url_for('optimization.index') }}" class="btn btn-secondary btn-sm">Open optimizer {{ icon('arrow-up-right') }}</a>
+  </div>
+  <div class="result-banner mb-4">
+    <div class="result-metric">
+      <span class="result-metric-label">Current profit</span>
+      <span class="result-metric-value">{{ quick_optimization.old_profit|currency }}</span>
+    </div>
+    <div class="result-metric">
+      <span class="result-metric-label">Projected profit</span>
+      <span class="result-metric-value text-success">{{ quick_optimization.new_profit|currency }}</span>
+    </div>
+    <div class="result-metric">
+      <span class="result-metric-label">Improvement</span>
+      <span class="result-metric-value {{ 'text-success' if quick_optimization.improvement_pct >= 0 else 'text-danger' }}">{{ '%+.1f'|format(quick_optimization.improvement_pct) }}%</span>
+    </div>
+  </div>
+  <div class="chart-container sm">
+    <canvas id="quickAllocationBar"></canvas>
+  </div>
+</div>
+{% endif %}
+
+<div class="page-section grid grid-2-1">
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3>Top Campaigns by ROI</h3>
+        <p class="card-subtitle">Your strongest performers this period</p>
+      </div>
+      <a href="{{ url_for('campaigns.list_view') }}" class="btn btn-ghost btn-sm">View all</a>
+    </div>
+    <div class="card-pad">
+      {% if top_campaigns %}
+      <div class="chart-container sm">
+        <canvas id="roiBar"></canvas>
+      </div>
+      {% else %}
+      <p class="text-muted text-sm">No campaign data yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>Recent Activity</h3>
+    </div>
+    <div class="card-pad">
+      <div class="activity-feed">
+        {% for a in recent_activity %}
+        <div class="activity-item">
+          <span class="activity-icon">{{ icon('refresh') }}</span>
+          <div>
+            <div class="activity-text">{{ a.description }}</div>
+            <div class="activity-time">{{ a.created_at|datetime }}</div>
+          </div>
+        </div>
+        {% else %}
+        <p class="text-muted text-sm">No recent activity.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    YieldCharts.renderTrendChart(
+      "trendChart",
+      {{ trend|map(attribute='period')|list|tojson }},
+      {{ trend|map(attribute='cost')|list|tojson }},
+      {{ trend|map(attribute='revenue')|list|tojson }}
+    );
+    YieldCharts.renderAllocationDonut(
+      "allocationDonut",
+      {{ allocation|map(attribute='channel')|list|tojson }},
+      {{ allocation|map(attribute='cost')|list|tojson }},
+      {{ allocation|map(attribute='color')|list|tojson }}
+    );
+    {% if top_campaigns %}
+    YieldCharts.renderRoiBar(
+      "roiBar",
+      {{ top_campaigns|map(attribute='campaign')|map(attribute='name')|list|tojson }},
+      {{ top_campaigns|map(attribute='roi')|list|tojson }}
+    );
+    {% endif %}
+    {% if quick_optimization and quick_optimization.status == 'success' %}
+    YieldCharts.renderAllocationBar(
+      "quickAllocationBar",
+      {{ quick_optimization.allocations|map(attribute='name')|list|tojson }},
+      {{ quick_optimization.allocations|map(attribute='original_cost')|list|tojson }},
+      {{ quick_optimization.allocations|map(attribute='optimized_cost')|list|tojson }}
+    );
+    {% endif %}
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% set page_title = "Campaigns" %}
+{% set page_subtitle = "Manage and monitor every campaign across channels." %}
+{% from "partials/icons.html" import icon %}
+
+{% block content %}
+<div class="page-header">
+  <div></div>
+  <div class="flex gap-2">
+    {% if current_user.can_manage_data %}
+    <a href="{{ url_for('campaigns.upload') }}" class="btn btn-secondary">{{ icon('upload') }} Import data</a>
+    <a href="{{ url_for('campaigns.create') }}" class="btn btn-primary">{{ icon('plus') }} New campaign</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card card-pad">
+  <form method="GET" class="filter-bar">
+    <div class="input-affix search-field">
+      <span class="input-affix-icon">{{ icon('search') }}</span>
+      <input type="text" name="q" class="form-control" placeholder="Search campaigns…" value="{{ search }}">
+    </div>
+    <select name="channel" class="form-control" onchange="this.form.submit()">
+      <option value="">All channels</option>
+      {% for c in channels %}
+      <option value="{{ c.id }}" {{ 'selected' if selected_channel == c.id }}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="status" class="form-control" onchange="this.form.submit()">
+      <option value="all" {{ 'selected' if selected_status == 'all' }}>All statuses</option>
+      <option value="active" {{ 'selected' if selected_status == 'active' }}>Active</option>
+      <option value="paused" {{ 'selected' if selected_status == 'paused' }}>Paused</option>
+      <option value="completed" {{ 'selected' if selected_status == 'completed' }}>Completed</option>
+    </select>
+    <select name="sort" class="form-control" onchange="this.form.submit()">
+      <option value="recent" {{ 'selected' if selected_sort == 'recent' }}>Most recent</option>
+      <option value="name" {{ 'selected' if selected_sort == 'name' }}>Name (A–Z)</option>
+      <option value="budget" {{ 'selected' if selected_sort == 'budget' }}>Budget (high to low)</option>
+    </select>
+    <button type="submit" class="btn btn-secondary">Filter</button>
+  </form>
+
+  {% if campaigns %}
+  <div class="table-wrap mt-4">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Campaign</th>
+          <th>Channel</th>
+          <th>Status</th>
+          <th class="num">Budget</th>
+          <th class="num">Spend</th>
+          <th class="num">Revenue</th>
+          <th class="num">ROI</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in campaigns %}
+        {% set totals = c.totals() %}
+        <tr class="row-link" onclick="window.location='{{ url_for('campaigns.detail', campaign_id=c.id) }}'">
+          <td><strong>{{ c.name }}</strong><div class="text-xs text-muted">{{ c.objective.title() }}</div></td>
+          <td><span class="channel-chip"><span class="channel-dot" style="background:{{ c.channel.color_hex }};"></span>{{ c.channel.name }}</span></td>
+          <td>
+            {% if c.status == 'active' %}<span class="badge badge-success"><span class="badge-dot"></span>Active</span>
+            {% elif c.status == 'paused' %}<span class="badge badge-warning"><span class="badge-dot"></span>Paused</span>
+            {% else %}<span class="badge badge-neutral"><span class="badge-dot"></span>Completed</span>{% endif %}
+          </td>
+          <td class="num">{{ c.budget_allocated|currency }}</td>
+          <td class="num">{{ totals.cost|currency }}</td>
+          <td class="num">{{ totals.revenue|currency }}</td>
+          <td class="num">
+            <span class="badge {{ 'badge-success' if totals.roi >= 0 else 'badge-danger' }}">{{ totals.roi|percent }}</span>
+          </td>
+          <td onclick="event.stopPropagation();">
+            <div class="dropdown">
+              <button class="btn btn-ghost btn-icon btn-sm" data-dropdown-toggle type="button">{{ icon('chevron-down') }}</button>
+              <div class="dropdown-panel" style="min-width:160px;">
+                <a href="{{ url_for('campaigns.detail', campaign_id=c.id) }}" class="dropdown-item">{{ icon('eye') }} View details</a>
+                {% if current_user.can_manage_data %}
+                <a href="{{ url_for('campaigns.edit', campaign_id=c.id) }}" class="dropdown-item">{{ icon('edit') }} Edit</a>
+                <div class="dropdown-divider"></div>
+                <form method="POST" action="{{ url_for('campaigns.delete', campaign_id=c.id) }}" onsubmit="return confirm('Delete {{ c.name }}? This cannot be undone.');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="dropdown-item" style="width:100%;background:none;border:none;color:var(--color-danger);cursor:pointer;">{{ icon('trash') }} Delete</button>
+                </form>
+                {% endif %}
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagination.pages > 1 %}
+  <div class="pagination">
+    <a class="{{ 'disabled' if not pagination.has_prev }}" href="{{ url_for('campaigns.list_view', page=pagination.prev_num, q=search, status=selected_status, sort=selected_sort, channel=selected_channel) }}">{{ icon('chevron-left', class_='') }}</a>
+    {% for p in pagination.iter_pages() %}
+      {% if p %}
+      <a class="{{ 'active' if p == pagination.page }}" href="{{ url_for('campaigns.list_view', page=p, q=search, status=selected_status, sort=selected_sort, channel=selected_channel) }}">{{ p }}</a>
+      {% else %}<span>…</span>{% endif %}
+    {% endfor %}
+    <a class="{{ 'disabled' if not pagination.has_next }}" href="{{ url_for('campaigns.list_view', page=pagination.next_num, q=search, status=selected_status, sort=selected_sort, channel=selected_channel) }}">{{ icon('chevron-right', class_='') }}</a>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">{{ icon('megaphone') }}</div>
+    <h3>No campaigns match your filters</h3>
+    <p>Try adjusting your search or import new campaign data to get started.</p>
+    {% if current_user.can_manage_data %}
+    <a href="{{ url_for('campaigns.upload') }}" class="btn btn-primary mt-2">{{ icon('upload') }} Import data</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

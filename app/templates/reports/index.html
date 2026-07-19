@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% set page_title = "Reports" %}
+{% set page_subtitle = "Export campaign performance for stakeholders." %}
+{% from "partials/icons.html" import icon %}
+
+{% block content %}
+<div class="card card-pad page-section">
+  <h3 class="mb-4">Generate a report</h3>
+  <form method="GET" class="form-row mb-4" style="max-width:420px;" id="periodForm">
+    <div class="form-group">
+      <label class="form-label" for="period">Reporting period</label>
+      <select name="period" id="period" class="form-control">
+        <option value="All">All time</option>
+        {% for p in periods %}
+        <option value="{{ p }}">{{ p }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  <div class="grid grid-cols-3">
+    <a href="#" data-export="pdf" class="card card-hover card-pad-sm flex items-center gap-3">
+      <span class="report-file-icon">{{ icon('file-text') }}</span>
+      <div>
+        <div class="font-semibold text-sm">PDF Report</div>
+        <div class="text-xs text-muted">Executive summary + tables</div>
+      </div>
+    </a>
+    <a href="#" data-export="excel" class="card card-hover card-pad-sm flex items-center gap-3">
+      <span class="report-file-icon">{{ icon('file-text') }}</span>
+      <div>
+        <div class="font-semibold text-sm">Excel Workbook</div>
+        <div class="text-xs text-muted">Data + embedded chart</div>
+      </div>
+    </a>
+    <a href="#" data-export="csv" class="card card-hover card-pad-sm flex items-center gap-3">
+      <span class="report-file-icon">{{ icon('file-text') }}</span>
+      <div>
+        <div class="font-semibold text-sm">CSV Export</div>
+        <div class="text-xs text-muted">Raw data for spreadsheets</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h3>Recent Reports</h3></div>
+  <div class="card-pad" style="padding-top:0;">
+    {% if history %}
+    {% for r in history %}
+    <div class="report-row">
+      <div class="flex items-center gap-3">
+        <span class="report-file-icon">{{ icon('file-text') }}</span>
+        <div>
+          <div class="font-semibold text-sm">{{ r.title }}</div>
+          <div class="text-xs text-muted">{{ r.created_at|datetime }} · {{ (r.file_size_bytes / 1024)|round(1) if r.file_size_bytes else 0 }} KB</div>
+        </div>
+      </div>
+      <span class="badge badge-neutral">{{ r.report_type.upper() }}</span>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">{{ icon('file-text') }}</div>
+      <h3>No reports generated yet</h3>
+      <p>Export your first report above — it'll show up here for quick reference.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll("[data-export]").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      const period = document.getElementById("period").value;
+      const type = el.getAttribute("data-export");
+      window.location = `/reports/export/${type}?period=${encodeURIComponent(period)}`;
+    });
+  });
+</script>
+{% endblock %}

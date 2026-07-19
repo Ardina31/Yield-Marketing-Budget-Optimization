@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% set page_title = "Settings" %}
+{% set page_subtitle = "Manage your profile, preferences, and security." %}
+{% from "partials/icons.html" import icon %}
+
+{% block content %}
+<div class="settings-layout">
+  <nav class="settings-nav">
+    <a href="#profile" class="active">{{ icon('user') }} Profile</a>
+    <a href="#preferences">{{ icon('settings') }} Preferences</a>
+    <a href="#security">{{ icon('lock') }} Security</a>
+    <a href="#activity">{{ icon('clock') }} Activity</a>
+  </nav>
+
+  <div class="flex flex-col gap-6">
+    <div class="card card-pad" id="profile">
+      <h3 class="mb-4">Profile</h3>
+      <form method="POST" action="{{ url_for('settings.update_profile') }}" novalidate>
+        {{ profile_form.hidden_tag() }}
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Full name</label>
+            {{ profile_form.name(class_="form-control") }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Company</label>
+            {{ profile_form.company_name(class_="form-control") }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          {{ profile_form.email(class_="form-control") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Save profile</button>
+      </form>
+    </div>
+
+    <div class="card card-pad" id="preferences">
+      <h3 class="mb-4">Preferences</h3>
+      <form method="POST" action="{{ url_for('settings.update_preferences') }}" novalidate>
+        {{ preferences_form.hidden_tag() }}
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Currency</label>
+            {{ preferences_form.currency(class_="form-control") }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Timezone</label>
+            {{ preferences_form.timezone(class_="form-control", placeholder="UTC") }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Default optimization goal</label>
+          {{ preferences_form.default_optimization_goal(class_="form-control") }}
+        </div>
+        <label class="checkbox-row mb-4">
+          {{ preferences_form.email_notifications() }}
+          <span class="text-sm text-secondary">Email me when an optimization completes</span>
+        </label>
+        <button type="submit" class="btn btn-primary">Save preferences</button>
+      </form>
+    </div>
+
+    <div class="card card-pad" id="security">
+      <h3 class="mb-4">Security</h3>
+      <form method="POST" action="{{ url_for('settings.update_password') }}" novalidate>
+        {{ password_form.hidden_tag() }}
+        <div class="form-group">
+          <label class="form-label">Current password</label>
+          {{ password_form.current_password(class_="form-control") }}
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">New password</label>
+            {{ password_form.new_password(class_="form-control") }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm new password</label>
+            {{ password_form.confirm_new_password(class_="form-control") }}
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Update password</button>
+      </form>
+    </div>
+
+    <div class="card card-pad" id="activity">
+      <h3 class="mb-4">Recent Activity</h3>
+      <div class="activity-feed">
+        {% for a in activity %}
+        <div class="activity-item">
+          <span class="activity-icon">{{ icon('refresh') }}</span>
+          <div>
+            <div class="activity-text">{{ a.description }}</div>
+            <div class="activity-time">{{ a.created_at|datetime }} {% if a.ip_address %}· {{ a.ip_address }}{% endif %}</div>
+          </div>
+        </div>
+        {% else %}
+        <p class="text-muted text-sm">No activity recorded yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

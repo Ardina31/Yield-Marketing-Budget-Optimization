@@ -1,0 +1,100 @@
+/* ---------------- Filter bar (campaigns list) ---------------- */
+.filter-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.filter-bar .form-control { min-width: 160px; }
+.filter-bar .search-field { flex: 1; min-width: 220px; }
+
+/* ---------------- Dashboard hero / period switcher ---------------- */
+.page-header {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+.page-header h1 { font-size: 1.4rem; }
+.page-header p { color: var(--color-text-muted); font-size: 0.86rem; margin-top: 4px; }
+
+.period-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.period-pill {
+  padding: 6px 14px; border-radius: var(--radius-full); font-size: 0.78rem; font-weight: 600;
+  border: 1px solid var(--color-border-strong); color: var(--color-text-secondary);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.period-pill:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.period-pill.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+/* ---------------- Chart card containers ---------------- */
+.chart-container { position: relative; height: 280px; }
+.chart-container.sm { height: 220px; }
+.chart-container.lg { height: 340px; }
+
+/* ---------------- Optimization result summary ---------------- */
+.result-banner {
+  display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap;
+  padding: var(--space-5) var(--space-6); border-radius: var(--radius-lg);
+  background: linear-gradient(120deg, var(--color-primary-soft), transparent);
+  border: 1px solid var(--color-border);
+}
+.result-metric { display: flex; flex-direction: column; gap: 2px; }
+.result-metric-label { font-size: 0.74rem; color: var(--color-text-muted); }
+.result-metric-value { font-family: var(--font-mono); font-size: 1.35rem; font-weight: 700; }
+
+/* ---------------- Activity feed ---------------- */
+.activity-feed { display: flex; flex-direction: column; }
+.activity-item { display: flex; gap: var(--space-3); padding: var(--space-3) 0; position: relative; }
+.activity-item:not(:last-child) {
+  border-bottom: 1px dashed var(--color-border);
+}
+.activity-icon {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--color-surface-alt);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--color-text-secondary);
+}
+.activity-icon svg { width: 15px; height: 15px; }
+.activity-text { font-size: 0.83rem; }
+.activity-time { font-size: 0.72rem; color: var(--color-text-muted); margin-top: 2px; }
+
+/* ---------------- Settings tabs ---------------- */
+.settings-layout { display: grid; grid-template-columns: 220px 1fr; gap: var(--space-6); align-items: start; }
+.settings-nav { display: flex; flex-direction: column; gap: 2px; position: sticky; top: calc(var(--topbar-height) + var(--space-4)); }
+.settings-nav a {
+  padding: 10px var(--space-3); border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 500;
+  color: var(--color-text-secondary);
+  display: flex; align-items: center; gap: 10px;
+}
+.settings-nav a svg { width: 16px; height: 16px; flex-shrink: 0; }
+.settings-nav a:hover { background: var(--color-surface-alt); }
+.settings-nav a.active { background: var(--color-primary-soft); color: var(--color-primary); }
+@media (max-width: 900px) {
+  .settings-layout { grid-template-columns: 1fr; }
+  .settings-nav { flex-direction: row; overflow-x: auto; position: static; }
+}
+
+/* ---------------- Report history cards ---------------- */
+.report-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4); }
+.report-row + .report-row { border-top: 1px solid var(--color-border); }
+.report-file-icon {
+  width: 38px; height: 38px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;
+  background: var(--color-surface-alt); color: var(--color-text-secondary); flex-shrink: 0;
+}
+.report-file-icon svg { width: 18px; height: 18px; }
+
+/* ---------------- Campaign detail header ---------------- */
+.detail-header {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-6); flex-wrap: wrap;
+}
+.detail-title-row { display: flex; align-items: center; gap: var(--space-3); }
+.detail-channel-icon {
+  width: 44px; height: 44px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.detail-channel-icon svg { width: 20px; height: 20px; color: #fff; }
+
+/* ---------------- Landing / marketing header on auth pages already in auth.css --------- */
+
+.spin-dot {
+  display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Loading state overlay for cards while data streams in */
+.card-loading { position: relative; min-height: 120px; }

@@ -1,0 +1,144 @@
+/* =========================================================================
+   YIELD — Design Tokens
+   Palette: cool navy/paper fintech base, teal = growth, ember = cost/alert.
+   ========================================================================= */
+
+:root {
+  /* --- Color: Light (default) --- */
+  --color-bg: #F7F8FB;
+  --color-bg-elevated: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F1F5F9;
+  --color-surface-hover: #EEF2F7;
+  --color-border: #E4E9F1;
+  --color-border-strong: #CBD5E1;
+
+  --color-text-primary: #0B1220;
+  --color-text-secondary: #47536B;
+  --color-text-muted: #8B98AC;
+  --color-text-inverse: #F7F8FB;
+
+  --color-primary: #0F766E;
+  --color-primary-hover: #0B5C55;
+  --color-primary-soft: #E4F5F3;
+  --color-primary-strong: #0A4A44;
+
+  --color-accent: #E8543F;
+  --color-accent-soft: #FCE8E4;
+
+  --color-success: #15803D;
+  --color-success-soft: #E4F5E9;
+  --color-warning: #B45309;
+  --color-warning-soft: #FDF1DF;
+  --color-danger: #DC2626;
+  --color-danger-soft: #FCE8E4;
+  --color-info: #2563EB;
+  --color-info-soft: #E6EEFE;
+
+  --color-sidebar-bg: #0B1220;
+  --color-sidebar-text: #B9C4D6;
+  --color-sidebar-text-active: #FFFFFF;
+  --color-sidebar-hover: rgba(255, 255, 255, 0.06);
+
+  --shadow-xs: 0 1px 2px rgba(11, 18, 32, 0.04);
+  --shadow-sm: 0 2px 6px rgba(11, 18, 32, 0.06), 0 1px 2px rgba(11, 18, 32, 0.04);
+  --shadow-md: 0 8px 24px rgba(11, 18, 32, 0.08), 0 2px 6px rgba(11, 18, 32, 0.04);
+  --shadow-lg: 0 20px 48px rgba(11, 18, 32, 0.12), 0 6px 16px rgba(11, 18, 32, 0.06);
+  --shadow-glow-primary: 0 0 0 4px rgba(15, 118, 110, 0.12);
+
+  /* --- Type --- */
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* --- Radius --- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* --- Spacing scale --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* --- Layout --- */
+  --sidebar-width: 264px;
+  --sidebar-width-collapsed: 84px;
+  --topbar-height: 72px;
+  --content-max-width: 1440px;
+
+  /* --- Motion --- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --duration-slow: 420ms;
+
+  /* Channel chart palette (fallback if channel has no explicit color) */
+  --chart-teal: #0F766E;
+  --chart-indigo: #4F46E5;
+  --chart-amber: #D97706;
+  --chart-rose: #E11D48;
+  --chart-sky: #0284C7;
+  --chart-violet: #7C3AED;
+}
+
+[data-theme="dark"] {
+  --color-bg: #090E19;
+  --color-bg-elevated: #101827;
+  --color-surface: #121A2B;
+  --color-surface-alt: #17223A;
+  --color-surface-hover: #1B2740;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.14);
+
+  --color-text-primary: #EEF2F8;
+  --color-text-secondary: #A7B3C6;
+  --color-text-muted: #64708A;
+  --color-text-inverse: #0B1220;
+
+  --color-primary: #2DD4BF;
+  --color-primary-hover: #5EEAD4;
+  --color-primary-soft: rgba(45, 212, 191, 0.12);
+  --color-primary-strong: #99F6E4;
+
+  --color-accent: #FF6B54;
+  --color-accent-soft: rgba(255, 107, 84, 0.14);
+
+  --color-success: #4ADE80;
+  --color-success-soft: rgba(74, 222, 128, 0.12);
+  --color-warning: #FBBF24;
+  --color-warning-soft: rgba(251, 191, 36, 0.12);
+  --color-danger: #F87171;
+  --color-danger-soft: rgba(248, 113, 113, 0.12);
+  --color-info: #60A5FA;
+  --color-info-soft: rgba(96, 165, 250, 0.12);
+
+  --color-sidebar-bg: #070B14;
+  --color-sidebar-text: #8593AC;
+  --color-sidebar-text-active: #FFFFFF;
+  --color-sidebar-hover: rgba(255, 255, 255, 0.05);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.5);
+  --shadow-glow-primary: 0 0 0 4px rgba(45, 212, 191, 0.16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

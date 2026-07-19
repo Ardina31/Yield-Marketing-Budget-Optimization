@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% set page_title = "Budget Optimization" %}
+{% set page_subtitle = "Choose a strategy and let the solver recommend a new spend split." %}
+{% from "partials/icons.html" import icon %}
+
+{% block content %}
+{% if not has_enough_data %}
+<div class="card">
+  <div class="empty-state">
+    <div class="empty-state-icon">{{ icon('sliders') }}</div>
+    <h3>Not enough data to optimize yet</h3>
+    <p>Import at least two campaigns with spend and revenue data before running an optimization.</p>
+    <a href="{{ url_for('campaigns.upload') }}" class="btn btn-primary mt-2">{{ icon('upload') }} Import data</a>
+  </div>
+</div>
+{% else %}
+
+<form method="POST" id="optimizeForm">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="card card-pad page-section">
+    <h3 class="mb-4">1. Choose your goal</h3>
+    <div class="goal-picker">
+      {% for value, label, description in goals %}
+      <label class="goal-card {{ 'selected' if selected_goal == value }}">
+        <input type="radio" name="goal" value="{{ value }}" {{ 'checked' if selected_goal == value }} onchange="document.querySelectorAll('.goal-card').forEach(c=>c.classList.remove('selected'));this.closest('.goal-card').classList.add('selected');">
+        <span class="goal-card-title">{{ icon('trending-up' if value == 'max_roi' else ('target' if value == 'max_conversions' else ('shield' if value == 'min_cost' else 'sliders'))) }} {{ label }}</span>
+        <span class="goal-card-desc">{{ description }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card card-pad page-section">
+    <h3 class="mb-4">2. Set your parameters</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="period">Reporting period</label>
+        <select name="period" id="period" class="form-control">
+          <option value="All" {{ 'selected' if selected_period == 'All' }}>All time</option>
+          {% for p in periods %}
+          <option value="{{ p }}" {{ 'selected' if selected_period == p }}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="total_budget">Total budget to allocate ($)</label>
+        <input type="number" step="0.01" min="0" name="total_budget" id="total_budget" class="form-control" value="{{ total_budget }}">
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg mt-2">{{ icon('zap') }} Run optimization</button>
+  </div>
+</form>
+
+{% if result %}
+  {% if result.status == 'success' %}
+  <div class="page-section">
+    <div class="result-banner mb-6">
+      <div class="result-metric">
+        <span class="result-metric-label">Current profit</span>
+        <span class="result-metric-value">{{ result.old_profit|currency }}</span>
+      </div>
+      <div class="result-metric">
+        <span class="result-metric-label">Projected profit</span>
+        <span class="result-metric-value text-success">{{ result.new_profit|currency }}</span>
+      </div>
+      <div class="result-metric">
+        <span class="result-metric-label">Improvement</span>
+        <span class="result-metric-value {{ 'text-success' if result.improvement_pct >= 0 else 'text-danger' }}">{{ '%+.1f'|format(result.improvement_pct) }}%</span>
+      </div>
+      <div class="result-metric">
+        <span class="result-metric-label">Strategy</span>
+        <span class="result-metric-value" style="font-size:1rem;">{{ result.goal_label }}</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Recommended Allocation</h3>
+      </div>
+      <div class="card-pad">
+        <div class="chart-container">
+          <canvas id="resultBar"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-6">
+      <div class="card-header"><h3>Allocation Detail</h3></div>
+      <div class="card-pad">
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Campaign</th><th>Channel</th><th class="num">Current</th><th class="num">Recommended</th><th class="num">Change</th><th class="num">Projected ROI</th></tr>
+            </thead>
+            <tbody>
+              {% for a in result.allocations %}
+              <tr>
+                <td><strong>{{ a.name }}</strong></td>
+                <td>{{ a.channel }}</td>
+                <td class="num">{{ a.original_cost|currency }}</td>
+                <td class="num">{{ a.optimized_cost|currency }}</td>
+                <td class="num"><span class="badge {{ 'badge-success' if a.change_pct >= 0 else 'badge-danger' }}">{{ '%+.1f'|format(a.change_pct) }}%</span></td>
+                <td class="num">{{ a.projected_roi|percent }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="card card-pad page-section">
+    <p class="text-danger">{{ result.message }}</p>
+  </div>
+  {% endif %}
+{% endif %}
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% if result and result.status == 'success' %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    YieldCharts.renderAllocationBar(
+      "resultBar",
+      {{ result.allocations|map(attribute='name')|list|tojson }},
+      {{ result.allocations|map(attribute='original_cost')|list|tojson }},
+      {{ result.allocations|map(attribute='optimized_cost')|list|tojson }}
+    );
+  });
+</script>
+{% endif %}
+{% endblock %}

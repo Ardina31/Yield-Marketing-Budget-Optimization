@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% set page_title = "Import Campaign Data" %}
+{% set page_subtitle = "Upload a CSV or Excel export from your ad platforms." %}
+{% from "partials/icons.html" import icon %}
+
+{% block content %}
+<div class="grid grid-2-1">
+  <div class="card card-pad">
+    <form method="POST" enctype="multipart/form-data" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="dropzone" data-dropzone>
+        <div class="dropzone-icon">{{ icon('upload') }}</div>
+        <p data-dropzone-prompt><strong>Drag &amp; drop</strong> your file here, or click to browse</p>
+        <p class="text-xs text-muted mt-2">CSV or Excel (.xlsx) · up to 5 MB</p>
+        <p data-file-name class="text-sm font-semibold mt-2" hidden style="color:var(--color-primary);"></p>
+        {{ form.file(style="display:none;") }}
+      </div>
+      {% for e in form.file.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+
+      <div class="form-group mt-4">
+        <label class="form-label" for="period">Reporting period</label>
+        {{ form.period(class_="form-control" + (" is-invalid" if form.period.errors else ""), id="period", placeholder="e.g. January or 2026-01") }}
+        <span class="form-hint">Used for rows in your file that don't already have their own "period" or "month" column.</span>
+        {% for e in form.period.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg mt-2">{{ icon('upload') }} Upload &amp; process</button>
+    </form>
+  </div>
+
+  <div class="card card-pad">
+    <h3 class="mb-4">File requirements</h3>
+    <ul class="flex flex-col gap-3">
+      <li class="flex items-center gap-2 text-sm"><span class="badge badge-primary">Required</span> Campaign, Channel, Cost, Revenue</li>
+      <li class="flex items-center gap-2 text-sm"><span class="badge badge-neutral">Optional</span> Impressions, Clicks, Conversions, Period</li>
+    </ul>
+    <div class="dropdown-divider mt-4 mb-4"></div>
+    <p class="text-xs text-muted">
+      Column names are matched automatically — "Spend", "Ad Spend", and "Amount Spent" all map to Cost;
+      "Sales", "Value", and "Return" all map to Revenue; "Platform", "Source", and "Network" all map to Channel.
+    </p>
+    <div class="dropdown-divider mt-4 mb-4"></div>
+    <p class="text-xs text-muted">New channels found in your file are created automatically. Existing campaigns are matched by name + channel and updated for the period you specify.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+{% endblock %}

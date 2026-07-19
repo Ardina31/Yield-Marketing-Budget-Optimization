@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% set page_title = "Optimization History" %}
+{% set page_subtitle = "A record of every optimization run for your workspace." %}
+{% from "partials/icons.html" import icon %}
+
+{% block content %}
+<div class="card">
+  {% if runs %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th><th>Strategy</th><th>Period</th><th class="num">Budget</th>
+          <th class="num">Old Profit</th><th class="num">New Profit</th><th class="num">Improvement</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in runs %}
+        <tr>
+          <td>{{ r.created_at|datetime }}</td>
+          <td><span class="badge badge-primary">{{ r.goal_label }}</span></td>
+          <td>{{ r.period_filter or 'All time' }}</td>
+          <td class="num">{{ r.total_budget|currency }}</td>
+          <td class="num">{{ r.old_profit|currency }}</td>
+          <td class="num">{{ r.new_profit|currency }}</td>
+          <td class="num">
+            <span class="badge {{ 'badge-success' if r.improvement_pct >= 0 else 'badge-danger' }}">{{ '%+.1f'|format(r.improvement_pct) }}%</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">{{ icon('clock') }}</div>
+    <h3>No optimizations run yet</h3>
+    <p>Once you run an optimization, every result will be saved here for comparison.</p>
+    <a href="{{ url_for('optimization.index') }}" class="btn btn-primary mt-2">{{ icon('sliders') }} Run your first optimization</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

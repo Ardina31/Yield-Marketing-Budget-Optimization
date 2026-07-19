@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% set page_title = campaign.name %}
+{% set page_subtitle = "Campaign performance detail" %}
+{% from "partials/icons.html" import icon %}
+
+{% block content %}
+<div class="detail-header page-section">
+  <div class="detail-title-row">
+    <span class="detail-channel-icon" style="background:{{ campaign.channel.color_hex }};">{{ icon('megaphone') }}</span>
+    <div>
+      <h1 style="font-size:1.3rem;">{{ campaign.name }}</h1>
+      <div class="flex items-center gap-2 mt-2">
+        <span class="channel-chip text-sm"><span class="channel-dot" style="background:{{ campaign.channel.color_hex }};"></span>{{ campaign.channel.name }}</span>
+        <span class="badge {{ 'badge-success' if campaign.status == 'active' else ('badge-warning' if campaign.status == 'paused' else 'badge-neutral') }}">{{ campaign.status.title() }}</span>
+        <span class="badge badge-neutral">{{ campaign.objective.title() }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="flex gap-2">
+    <a href="{{ url_for('campaigns.list_view') }}" class="btn btn-ghost">{{ icon('chevron-left') }} Back</a>
+    {% if current_user.can_manage_data %}
+    <a href="{{ url_for('campaigns.edit', campaign_id=campaign.id) }}" class="btn btn-secondary">{{ icon('edit') }} Edit</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="page-section grid grid-stats">
+  <div class="card stat-card">
+    <span class="stat-card-label">Total Spend</span>
+    <span class="stat-card-value">{{ totals.cost|currency }}</span>
+  </div>
+  <div class="card stat-card">
+    <span class="stat-card-label">Total Revenue</span>
+    <span class="stat-card-value">{{ totals.revenue|currency }}</span>
+  </div>
+  <div class="card stat-card">
+    <span class="stat-card-label">ROI</span>
+    <span class="stat-card-value">{{ totals.roi|percent }}</span>
+  </div>
+  <div class="card stat-card">
+    <span class="stat-card-label">Conversions</span>
+    <span class="stat-card-value">{{ "{:,}".format(totals.conversions) }}</span>
+  </div>
+</div>
+
+{% if metrics %}
+<div class="page-section card">
+  <div class="card-header">
+    <h3>Spend vs. Revenue Over Time</h3>
+  </div>
+  <div class="card-pad">
+    <div class="chart-container">
+      <canvas id="campaignTrend"></canvas>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="page-section card">
+  <div class="card-header">
+    <h3>Reporting History</h3>
+  </div>
+  <div class="card-pad">
+    {% if metrics %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Period</th><th class="num">Cost</th><th class="num">Revenue</th><th class="num">ROI</th>
+            <th class="num">Impressions</th><th class="num">Clicks</th><th class="num">Conversions</th><th class="num">CPA</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in metrics %}
+          <tr>
+            <td><strong>{{ m.period }}</strong></td>
+            <td class="num">{{ m.cost|currency }}</td>
+            <td class="num">{{ m.revenue|currency }}</td>
+            <td class="num"><span class="badge {{ 'badge-success' if m.roi >= 0 else 'badge-danger' }}">{{ m.roi|percent }}</span></td>
+            <td class="num">{{ "{:,}".format(m.impressions) }}</td>
+            <td class="num">{{ "{:,}".format(m.clicks) }}</td>
+            <td class="num">{{ "{:,}".format(m.conversions) }}</td>
+            <td class="num">{{ m.cpa|currency }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">{{ icon('file-text') }}</div>
+      <h3>No performance data yet</h3>
+      <p>Import a CSV or Excel file with this campaign's spend and revenue to see history here.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if metrics %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    YieldCharts.renderTrendChart(
+      "campaignTrend",
+      {{ metrics|map(attribute='period')|list|tojson }},
+      {{ metrics|map(attribute='cost')|list|tojson }},
+      {{ metrics|map(attribute='revenue')|list|tojson }}
+    );
+  });
+</script>
+{% endif %}
+{% endblock %}

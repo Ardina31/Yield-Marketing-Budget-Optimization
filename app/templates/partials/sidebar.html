@@ -1,0 +1,44 @@
+{% from "partials/icons.html" import icon %}
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-mark">Y</div>
+    <div>
+      <div class="sidebar-brand-name">{{ app_name }}</div>
+      <div class="sidebar-brand-tagline">Budget Optimization</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div>
+      <div class="nav-section-title">Workspace</div>
+      <ul class="nav-list">
+        <li><a href="{{ url_for('dashboard.index') }}" class="nav-link {{ 'active' if current_path == url_for('dashboard.index') }}">{{ icon('grid') }}<span class="nav-label">Dashboard</span></a></li>
+        <li><a href="{{ url_for('campaigns.list_view') }}" class="nav-link" data-path-prefix="/campaigns">{{ icon('megaphone') }}<span class="nav-label">Campaigns</span></a></li>
+        <li><a href="{{ url_for('optimization.index') }}" class="nav-link" data-path-prefix="/optimization">{{ icon('sliders') }}<span class="nav-label">Optimization</span></a></li>
+        <li><a href="{{ url_for('reports.index') }}" class="nav-link" data-path-prefix="/reports">{{ icon('file-text') }}<span class="nav-label">Reports</span></a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="nav-section-title">Account</div>
+      <ul class="nav-list">
+        <li><a href="{{ url_for('settings.index') }}" class="nav-link" data-path-prefix="/settings">{{ icon('settings') }}<span class="nav-label">Settings</span></a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('settings.index') }}" class="sidebar-user">
+      <div class="avatar" style="width:34px;height:34px;font-size:0.8rem;background:{{ current_user.avatar_color }};">{{ current_user.initials }}</div>
+      <div class="sidebar-user-meta">
+        <div class="sidebar-user-name">{{ current_user.name }}</div>
+        <div class="sidebar-user-role">{{ current_user.role }}</div>
+      </div>
+    </a>
+    {% endif %}
+    <button class="sidebar-collapse-btn" data-sidebar-collapse type="button" aria-label="Collapse sidebar">
+      {{ icon('chevron-left') }}<span class="nav-label">Collapse</span>
+    </button>
+  </div>
+</aside>
