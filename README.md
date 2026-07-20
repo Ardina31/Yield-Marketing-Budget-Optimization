@@ -10,7 +10,7 @@
 | | |
 |---|---|
 | **Login** | **Dashboard** |
-| ![Login](doc/A-login.png?v=2) | ![Dashboard](doc/B-Dashboard.png) |
+| ![Login](doc/A-login.png?v=3) | ![Dashboard](doc/B-Dashboard.png) |
 | **Dashboard — trend & allocation** | **Campaigns** |
 | ![Dashboard trend and allocation](doc/C-Dashboard1.png) | ![Campaigns](doc/D-campaigns.png) |
 | **Budget Optimization** | **Reports** |
