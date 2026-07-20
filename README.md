@@ -1,5 +1,21 @@
 # Yield — Marketing Budget Optimization Platform
 
+**🔗 Live demo:** [yield-marketing-budget-optimization.onrender.com](https://yield-marketing-budget-optimization.onrender.com)
+
+> Hosted on Render's free tier — if it's been idle, the first load can take
+> ~30–60 seconds to wake up. That's normal, not a bug.
+
+## Screenshots
+
+| | |
+|---|---|
+| **Login** | **Dashboard** |
+| ![Login](doc/A-%20login.png) | ![Dashboard](doc/B-Dashboard.png) |
+| **Dashboard — trend & allocation** | **Campaigns** |
+| ![Dashboard trend and allocation](doc/C-Dashboard1.png) | ![Campaigns](doc/D-campaigns.png) |
+| **Budget Optimization** | **Reports** |
+| ![Optimization](doc/E-optimization.png) | ![Reports](doc/F-Reports.png) |
+
 A production-style SaaS application that helps businesses optimize digital
 marketing budgets using campaign performance data and non-linear
 optimization (SciPy SLSQP).
@@ -79,21 +95,38 @@ seed.py                   # demo data generator
 ## Getting started
 
 ```bash
+git clone https://github.com/Ardina31/Yield-Marketing-Budget-Optimization.git
+cd Yield-Marketing-Budget-Optimization
+
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 cp .env.example .env            # then edit SECRET_KEY etc.
 
-python seed.py                  # creates tables + a demo admin + sample data
 python run.py                   # http://localhost:5000
 ```
 
+That's it — `run.py` automatically creates the database tables, default
+channels, and a demo admin account (with 30 campaigns / 117 rows of
+history spanning 8 channels and 10 months) the very first time it boots.
+It's idempotent, so restarting or redeploying never duplicates data — it
+just checks whether the demo account already exists and skips if so. This
+is also what makes the live demo above work on Render's free tier without
+needing shell access.
+
 Demo login: **admin@yield.app** / **admin123**
 
-To start from a completely empty workspace instead of demo data, skip
-`seed.py` and just run `python run.py` — it creates tables and default
-channels, then register your own account from the app.
+> ⚠️ Since this repo (and this password) is public, treat the live demo as
+> just that — a demo. Don't rely on it for real data, and feel free to
+> change the password via Settings once you've explored it.
+
+Want a smaller, hand-curated dataset instead (obvious winners/losers, good
+for a 30-second walkthrough) alongside the main demo account? Run:
+
+```bash
+python seed.py --story          # adds demo@yield.app / demo123
+```
 
 ### Running tests
 
@@ -115,10 +148,32 @@ Every channel's allowed spend is bounded between 20% and 300% of its
 current spend (configurable in `config.py`) to keep recommendations
 realistic, and projected gains apply a conservative 85% execution factor.
 
-## Notes for production
+## Deployment (Render, free tier)
 
-- Set a strong `SECRET_KEY` and `DATABASE_URL` (Postgres recommended) via
-  environment variables — `ProductionConfig` will refuse to start with the
-  default dev secret.
-- Put the app behind Gunicorn + a reverse proxy (`gunicorn "run:app"`).
-- Add `Flask-Migrate` if you need schema migrations beyond `db.create_all()`.
+This is exactly how the live demo above is deployed:
+
+1. Push this repo to GitHub.
+2. On [Render](https://render.com), create a free **PostgreSQL** database
+   and copy its internal connection URL.
+3. Create a free **Web Service** from the GitHub repo with:
+   - Build command: `pip install -r requirements.txt`
+   - Start command: `gunicorn run:app`
+4. Add these environment variables on the web service:
+   - `SECRET_KEY` — any long random string (not your local dev one)
+   - `FLASK_ENV` — `production`
+   - `DATABASE_URL` — the Postgres URL from step 2
+   - `PYTHON_VERSION` — `3.12.7` (as of writing, Render defaults to a
+     newer Python that doesn't yet have prebuilt wheels for scipy/numpy,
+     which fails the build; pinning 3.12 fixes it)
+5. Deploy. `run.py` handles the rest automatically — table creation,
+   default channels, and the demo admin account are all seeded on first
+   boot, no shell access required.
+
+Notes:
+- `requirements.txt` includes `psycopg2-binary` for the PostgreSQL driver
+  — don't remove it if you're using Postgres instead of SQLite.
+- Render's free web services sleep after ~15 minutes of inactivity; the
+  next request wakes them back up in under a minute.
+- `ProductionConfig` will refuse to start if `SECRET_KEY` is left at its
+  default dev value, as a safety net against accidentally shipping the
+  placeholder secret.
